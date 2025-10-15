@@ -1,0 +1,3380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Performance Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            padding: 50px 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #667eea);
+            background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .main-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            padding: 40px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .section-title::before {
+            content: '';
+            width: 6px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        label {
+            font-size: 13px;
+            color: #555;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        input, select, textarea {
+            padding: 14px 18px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+            font-family: inherit;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        input:hover, select:hover, textarea:hover {
+            border-color: #cbd5e1;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+        
+        button:active {
+            transform: translateY(-1px);
+        }
+        
+        .btn-add {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .btn-export {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-export:hover {
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+        }
+        
+        .btn-clear {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-clear:hover {
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
+        }
+        
+        .btn-send {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-send:hover {
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
+        }
+        
+        .btn-outlet {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+        }
+        
+        .btn-outlet:hover {
+            box-shadow: 0 8px 25px rgba(6, 182, 212, 0.5);
+        }
+        
+        .btn-manage {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+        
+        .btn-manage:hover {
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+        }
+        
+        .btn-quick-add {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+        
+        .btn-quick-add:hover {
+            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.5);
+        }
+        
+        .filter-section {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .filter-group label {
+            font-size: 14px;
+            color: #475569;
+            margin: 0;
+        }
+        
+        .filter-group select {
+            min-width: 200px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.8px;
+            white-space: nowrap;
+        }
+        
+        th:first-child {
+            border-top-left-radius: 16px;
+        }
+        
+        th:last-child {
+            border-top-right-radius: 16px;
+        }
+        
+        td {
+            padding: 16px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            font-size: 14px;
+        }
+        
+        tr:hover {
+            background: linear-gradient(to right, #f8fafc, #f1f5f9);
+            transition: all 0.2s;
+        }
+        
+        tr:last-child td:first-child {
+            border-bottom-left-radius: 16px;
+        }
+        
+        tr:last-child td:last-child {
+            border-bottom-right-radius: 16px;
+        }
+        
+        .delete-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .delete-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+        
+        .edit-btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: 8px;
+        }
+        
+        .edit-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
+        .salesperson-link {
+            color: #667eea;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        .salesperson-link:hover {
+            color: #764ba2;
+        }
+        
+        .outlet-link {
+            color: #06b6d4;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        .outlet-link:hover {
+            color: #0891b2;
+        }
+        
+        .performance-excellent { 
+            color: #10b981; 
+            font-weight: 700;
+        }
+        .performance-good { 
+            color: #3b82f6; 
+            font-weight: 700;
+        }
+        .performance-average { 
+            color: #f59e0b; 
+            font-weight: 700;
+        }
+        .performance-poor { 
+            color: #ef4444; 
+            font-weight: 700;
+        }
+        
+        .summary-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 24px;
+            padding: 40px;
+            color: white;
+            margin-top: 30px;
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+        }
+        
+        .summary-section h2 {
+            font-size: 2em;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+        
+        .summary-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 25px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .summary-card h3 {
+            font-size: 13px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .summary-card .value {
+            font-size: 2.2em;
+            font-weight: 800;
+            margin-top: 5px;
+        }
+        
+        .rankings-section {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            border-radius: 24px;
+            padding: 40px;
+            color: white;
+            margin-top: 30px;
+            box-shadow: 0 20px 60px rgba(6, 182, 212, 0.3);
+        }
+        
+        .rankings-section h2 {
+            font-size: 2em;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+        
+        .product-rankings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .ranking-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 25px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .ranking-card h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        
+        .ranking-item {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .ranking-item:last-child {
+            border-bottom: none;
+        }
+        
+        .medal {
+            font-size: 24px;
+        }
+        
+        .ranking-info {
+            flex: 1;
+        }
+        
+        .ranking-name {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 3px;
+        }
+        
+        .ranking-units {
+            font-size: 22px;
+            font-weight: 800;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #94a3b8;
+        }
+        
+        .empty-state svg {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.5em;
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+        
+        .empty-state p {
+            font-size: 1.1em;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-left: 4px solid #0ea5e9;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #0c4a6e;
+        }
+        
+        .info-box strong {
+            color: #0369a1;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 1200px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalopen 0.4s;
+        }
+        
+        @keyframes modalopen {
+            from {opacity: 0; transform: translateY(-50px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 24px 24px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+        
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .close:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .daily-entry-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .daily-entries {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .daily-entry-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .daily-entry-info {
+            flex: 1;
+        }
+        
+        .daily-entry-date {
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 5px;
+        }
+        
+        .daily-entry-details {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #64748b;
+        }
+        
+        .daily-entry-performance {
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .performance-excellent-bg { 
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        .performance-good-bg { 
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        .performance-average-bg { 
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+        .performance-poor-bg { 
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .monthly-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .monthly-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 20px;
+            border-radius: 16px;
+        }
+        
+        .monthly-card h3 {
+            font-size: 16px;
+            color: #475569;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .monthly-card .value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #334155;
+        }
+        
+        .monthly-chart {
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+            z-index: 2000;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .outlet-entry-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .outlet-entry-info {
+            flex: 1;
+        }
+        
+        .outlet-entry-date {
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 5px;
+        }
+        
+        .outlet-entry-details {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #64748b;
+        }
+        
+        .outlet-performance {
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .outlet-summary-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .outlet-summary-card h3 {
+            font-size: 18px;
+            color: #334155;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .outlet-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .outlet-metric {
+            text-align: center;
+        }
+        
+        .outlet-metric-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #334155;
+        }
+        
+        .outlet-metric-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+        
+        .outlet-day-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .outlet-day-card {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        
+        .outlet-day-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .outlet-day-date {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+        
+        .outlet-day-performance {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        
+        .outlet-day-units {
+            font-size: 14px;
+            color: #334155;
+            margin-top: 5px;
+        }
+        
+        .outlet-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .outlet-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+        
+        .outlet-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .outlet-card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #334155;
+        }
+        
+        .outlet-card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .outlet-card-body {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .outlet-detail {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .outlet-detail-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .outlet-detail-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #334155;
+        }
+        
+        .quick-outlet-add {
+            background: #f0f9ff;
+            border: 2px dashed #0ea5e9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .quick-outlet-add h3 {
+            color: #0369a1;
+            margin-bottom: 15px;
+        }
+        
+        .quick-outlet-form {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .warning-box {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-left: 4px solid #ef4444;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #991b1b;
+        }
+        
+        .warning-box strong {
+            color: #dc2626;
+        }
+        
+        .edit-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        
+        .edit-modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 0;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalopen 0.4s;
+        }
+        
+        .edit-modal-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 24px 24px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .edit-modal-header h3 {
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+        
+        .edit-modal-body {
+            padding: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn-add {
+                min-width: auto;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 10px 8px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .main-card {
+                padding: 25px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Sales Performance Tracker</h1>
+            <p class="subtitle">Track and analyze sales performance across multiple outlets and products</p>
+        </div>
+        
+        <div class="main-card">
+            <div class="section-title">Add New Entry</div>
+            
+            <div class="info-box">
+                <strong>Target Calculation:</strong> 7 tins per day for ANY combination of Diabetasol A, Diabetasol V, or Entrasol. 
+                Total Target = Working Days × 7 tins
+            </div>
+            
+            <div class="controls">
+                <div class="input-group">
+                    <label>Sales Person Name</label>
+                    <input type="text" id="salesPerson" placeholder="Enter name">
+                </div>
+                
+                <div class="input-group">
+                    <label>Month</label>
+                    <input type="month" id="month" value="">
+                </div>
+                
+                <div class="input-group">
+                    <label>Number of Outlets</label>
+                    <input type="number" id="outlets" placeholder="Outlets worked" min="1">
+                </div>
+                
+                <div class="input-group">
+                    <label>Diabetasol Sweetener</label>
+                    <input type="number" id="sweetener" placeholder="Units sold" min="0">
+                </div>
+                
+                <div class="input-group">
+                    <label>Diabetasol V</label>
+                    <input type="number" id="diabetasolV" placeholder="Units sold" min="0">
+                </div>
+                
+                <div class="input-group">
+                    <label>Diabetasol A</label>
+                    <input type="number" id="diabetasolA" placeholder="Units sold" min="0">
+                </div>
+                
+                <div class="input-group">
+                    <label>Entrasol</label>
+                    <input type="number" id="entrasol" placeholder="Units sold" min="0">
+                </div>
+                
+                <div class="input-group">
+                    <label>Diabetasol 180g Pack</label>
+                    <input type="number" id="pack180g" placeholder="Units sold" min="0">
+                </div>
+                
+                <div class="input-group">
+                    <label>Working Days</label>
+                    <input type="number" id="workingDays" placeholder="Number of days worked" min="1">
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-add" onclick="addEntry()">➕ Add Entry</button>
+                <button class="btn-manage" onclick="openOutletManagementModal()">🏪 Manage Outlets</button>
+                <button class="btn-outlet" onclick="openOutletModal()">📈 Add Outlet Performance</button>
+                <button class="btn-send" onclick="sendToBoss()">📤 Send to Boss</button>
+                <button class="btn-export" onclick="exportToExcel()">📥 Export to Excel</button>
+                <button class="btn-clear" onclick="clearAllData()">🗑️ Clear All Data</button>
+            </div>
+        </div>
+        
+        <div class="main-card">
+            <div class="section-title">Performance Data</div>
+            
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label>Filter by Month:</label>
+                    <select id="filterMonth" onchange="filterData()">
+                        <option value="">All Months</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Filter by Person:</label>
+                    <select id="filterPerson" onchange="filterData()">
+                        <option value="">All Persons</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Filter by Outlet:</label>
+                    <select id="filterOutlet" onchange="filterData()">
+                        <option value="">All Outlets</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="tableWrapper">
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    <h3>No Data Yet</h3>
+                    <p>Add your first sales entry to get started</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="summary-section">
+            <h2>📈 Performance Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h3>Total Entries</h3>
+                    <div class="value" id="totalEntries">0</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Sales</h3>
+                    <div class="value" id="totalSalesSum">0</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Average Achievement</h3>
+                    <div class="value" id="avgAchievement">0%</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Best Performer</h3>
+                    <div class="value" id="bestPerformer">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="rankings-section">
+            <h2>🏆 Top 3 Performers by Product</h2>
+            <div class="product-rankings" id="productRankings">
+                <div class="empty-state" style="grid-column: 1/-1;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <p>Rankings will appear once you add sales data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Outlet Management Modal -->
+    <div id="outletManagementModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🏪 Outlet Management</h2>
+                <button class="close" onclick="closeModal('outletManagementModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="section-title">Add New Outlet</div>
+                
+                <div class="controls">
+                    <div class="input-group">
+                        <label>Outlet Name *</label>
+                        <input type="text" id="outletName" placeholder="Enter outlet name">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Outlet Code</label>
+                        <input type="text" id="outletCode" placeholder="Enter outlet code">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Location/Address</label>
+                        <input type="text" id="outletLocation" placeholder="Enter location">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Contact Person</label>
+                        <input type="text" id="outletContact" placeholder="Enter contact person">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="outletPhone" placeholder="Enter phone number">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" id="outletEmail" placeholder="Enter email">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Outlet Type</label>
+                        <select id="outletType">
+                            <option value="">Select type</option>
+                            <option value="Pharmacy">Pharmacy</option>
+                            <option value="Hospital">Hospital</option>
+                            <option value="Clinic">Clinic</option>
+                            <option value="Retail Store">Retail Store</option>
+                            <option value="Supermarket">Supermarket</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Status</label>
+                        <select id="outletStatus">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Pending">Pending</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="input-group" style="margin-bottom: 20px;">
+                    <label>Additional Notes</label>
+                    <textarea id="outletNotes" placeholder="Enter any additional notes about the outlet"></textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-add" onclick="addOutlet()">➕ Add Outlet</button>
+                    <button class="btn-clear" onclick="clearOutletForm()">🔄 Clear Form</button>
+                </div>
+                
+                <div class="section-title" style="margin-top: 40px;">Existing Outlets</div>
+                
+                <div id="outletsList">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                        <h3>No Outlets Added Yet</h3>
+                        <p>Add your first outlet using the form above</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Salesperson Detail Modal -->
+    <div id="salespersonModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Salesperson Details</h2>
+                <button class="close" onclick="closeModal('salespersonModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs">
+                    <div class="tab active" onclick="openTab(event, 'monthly')">Monthly Summary</div>
+                    <div class="tab" onclick="openTab(event, 'daily')">Daily Performance</div>
+                    <div class="tab" onclick="openTab(event, 'outlets')">Outlet Details</div>
+                </div>
+                
+                <div id="monthly" class="tab-content active">
+                    <div class="monthly-summary" id="monthlySummary">
+                        <!-- Monthly summary will be populated here -->
+                    </div>
+                    <div class="monthly-chart">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+                
+                <div id="daily" class="tab-content">
+                    <div class="quick-outlet-add" id="quickOutletAdd" style="display: none;">
+                        <h3>⚠️ No Outlets Available</h3>
+                        <p>You need to add outlets first before adding daily performance data.</p>
+                        <div class="quick-outlet-form">
+                            <div class="input-group">
+                                <label>Quick Add Outlet</label>
+                                <input type="text" id="quickOutletName" placeholder="Enter outlet name">
+                            </div>
+                            <button class="btn-quick-add" onclick="quickAddOutlet()">Add Outlet</button>
+                        </div>
+                    </div>
+                    
+                    <div class="daily-entry-form" id="dailyEntryForm">
+                        <div class="input-group">
+                            <label>Date</label>
+                            <input type="date" id="dailyDate">
+                        </div>
+                        <div class="input-group">
+                            <label>Outlet</label>
+                            <select id="dailyOutlet">
+                                <option value="">Select Outlet</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Diabetasol V</label>
+                            <input type="number" id="dailyDiabetasolV" placeholder="Units sold" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Diabetasol A</label>
+                            <input type="number" id="dailyDiabetasolA" placeholder="Units sold" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Entrasol</label>
+                            <input type="number" id="dailyEntrasol" placeholder="Units sold" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Sweetener</label>
+                            <input type="number" id="dailySweetener" placeholder="Units sold" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Dsol 180g Pack</label>
+                            <input type="number" id="dailyPack180g" placeholder="Units sold" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>&nbsp;</label>
+                            <button onclick="addDailyEntry()">Add Daily Entry</button>
+                        </div>
+                    </div>
+                    <div class="daily-entries" id="dailyEntries">
+                        <!-- Daily entries will be populated here -->
+                    </div>
+                </div>
+                
+                <div id="outlets" class="tab-content">
+                    <div id="outletDetails">
+                        <!-- Outlet details will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Daily Entry Modal -->
+    <div id="editDailyEntryModal" class="edit-modal">
+        <div class="edit-modal-content">
+            <div class="edit-modal-header">
+                <h3>Edit Daily Entry</h3>
+                <button class="close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="edit-modal-body">
+                <div class="controls">
+                    <div class="input-group">
+                        <label>Date</label>
+                        <input type="date" id="editDailyDate">
+                    </div>
+                    <div class="input-group">
+                        <label>Outlet</label>
+                        <select id="editDailyOutlet">
+                            <option value="">Select Outlet</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Diabetasol V</label>
+                        <input type="number" id="editDailyDiabetasolV" placeholder="Units sold" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label>Diabetasol A</label>
+                        <input type="number" id="editDailyDiabetasolA" placeholder="Units sold" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label>Entrasol</label>
+                        <input type="number" id="editDailyEntrasol" placeholder="Units sold" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label>Sweetener</label>
+                        <input type="number" id="editDailySweetener" placeholder="Units sold" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label>Dsol 180g Pack</label>
+                        <input type="number" id="editDailyPack180g" placeholder="Units sold" min="0">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn-add" onclick="updateDailyEntry()">Update Entry</button>
+                    <button class="btn-clear" onclick="closeEditModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Outlet Detail Modal -->
+    <div id="outletModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="outletModalTitle">Outlet Performance</h2>
+                <button class="close" onclick="closeModal('outletModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="warning-box" id="outletWarning" style="display: none;">
+                    <strong>No outlets available!</strong> Please add outlets first using the "Manage Outlets" button.
+                </div>
+                
+                <div id="outletSelection" style="display: none;">
+                    <div class="section-title">Select Outlet</div>
+                    <div class="controls">
+                        <div class="input-group" style="grid-column: span 2;">
+                            <label>Choose Outlet</label>
+                            <select id="selectOutletForPerformance" onchange="loadOutletPerformance()">
+                                <option value="">Select an outlet to view performance</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tabs" id="outletTabs" style="display: none;">
+                    <div class="tab active" onclick="openOutletTab(event, 'outletSummary')">Summary</div>
+                    <div class="tab" onclick="openOutletTab(event, 'outletDaily')">Daily Performance</div>
+                    <div class="tab" onclick="openOutletTab(event, 'outletSalespersons')">Salespersons</div>
+                </div>
+                
+                <div id="outletSummary" class="tab-content active">
+                    <div class="outlet-summary-card">
+                        <h3>Outlet Performance Summary</h3>
+                        <div class="outlet-metrics" id="outletMetrics">
+                            <!-- Outlet metrics will be populated here -->
+                        </div>
+                    </div>
+                    <div class="outlet-day-grid" id="outletDayGrid">
+                        <!-- Outlet day cards will be populated here -->
+                    </div>
+                </div>
+                
+                <div id="outletDaily" class="tab-content">
+                    <div class="daily-entry-form">
+                        <div class="input-group">
+                            <label>Date</label>
+                            <input type="date" id="outletDailyDate">
+                        </div>
+                        <div class="input-group">
+                            <label>Sales Person</label>
+                            <select id="outletDailySalesperson">
+                                <option value="">Select Salesperson</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Diabetasol V</label>
+                            <input type="number" id="outletDailyDiabetasolV" placeholder="Units sold" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Diabetasol A</label>
+                            <input type="number" id="outletDailyDiabetasolA" placeholder="Units sold" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Entrasol</label>
+                            <input type="number" id="outletDailyEntrasol" placeholder="Units sold" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Sweetener</label>
+                            <input type="number" id="outletDailySweetener" placeholder="Units sold" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Dsol 180g Pack</label>
+                            <input type="number" id="outletDailyPack180g" placeholder="Units sold" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>&nbsp;</label>
+                            <button onclick="addOutletDailyEntry()">Add Daily Entry</button>
+                        </div>
+                    </div>
+                    <div class="daily-entries" id="outletDailyEntries">
+                        <!-- Outlet daily entries will be populated here -->
+                    </div>
+                </div>
+                
+                <div id="outletSalespersons" class="tab-content">
+                    <div id="outletSalespersonsList">
+                        <!-- Outlet salespersons will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success Message -->
+    <div id="successMessage" class="success-message">
+        Data sent to boss successfully!
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let performanceData = [];
+        let dailyData = {};
+        let outletData = {};
+        let outletsList = [];
+        let currentSalesperson = null;
+        let currentOutlet = null;
+        let performanceChart = null;
+        let editingEntryIndex = null;
+        
+        // Set current month as default
+        document.getElementById('month').value = new Date().toISOString().slice(0, 7);
+        
+        // Load data from localStorage if available
+        function loadData() {
+            const savedData = localStorage.getItem('salesPerformanceData');
+            if (savedData) {
+                performanceData = JSON.parse(savedData);
+                updateTable();
+                updateFilters();
+                updateSummary();
+                updateProductRankings();
+            }
+            
+            const savedDailyData = localStorage.getItem('dailyPerformanceData');
+            if (savedDailyData) {
+                dailyData = JSON.parse(savedDailyData);
+            }
+            
+            const savedOutletData = localStorage.getItem('outletPerformanceData');
+            if (savedOutletData) {
+                outletData = JSON.parse(savedOutletData);
+            }
+            
+            const savedOutletsList = localStorage.getItem('outletsList');
+            if (savedOutletsList) {
+                outletsList = JSON.parse(savedOutletsList);
+            }
+        }
+        
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('salesPerformanceData', JSON.stringify(performanceData));
+            localStorage.setItem('dailyPerformanceData', JSON.stringify(dailyData));
+            localStorage.setItem('outletPerformanceData', JSON.stringify(outletData));
+            localStorage.setItem('outletsList', JSON.stringify(outletsList));
+        }
+        
+        function addEntry() {
+            const salesPerson = document.getElementById('salesPerson').value.trim();
+            const month = document.getElementById('month').value;
+            const outlets = parseInt(document.getElementById('outlets').value);
+            const sweetener = parseInt(document.getElementById('sweetener').value) || 0;
+            const diabetasolV = parseInt(document.getElementById('diabetasolV').value) || 0;
+            const diabetasolA = parseInt(document.getElementById('diabetasolA').value) || 0;
+            const entrasol = parseInt(document.getElementById('entrasol').value) || 0;
+            const pack180g = parseInt(document.getElementById('pack180g').value) || 0;
+            const workingDays = parseInt(document.getElementById('workingDays').value);
+            
+            if (!salesPerson || !month || !outlets) {
+                alert('Please fill in sales person, month, and outlets');
+                return;
+            }
+            
+            if (!workingDays || workingDays < 1) {
+                alert('Please enter valid working days (minimum 1)');
+                return;
+            }
+            
+            const totalUnits = sweetener + diabetasolV + diabetasolA + entrasol + pack180g;
+            
+            if (totalUnits === 0) {
+                alert('Please enter at least one product quantity');
+                return;
+            }
+            
+            // Calculate target: 7 tins per day for ANY combination of main products (Diabetasol A, Diabetasol V, or Entrasol)
+            const targetTins = workingDays * 7;
+            const mainProductsSold = entrasol + diabetasolV + diabetasolA;
+            
+            // Achievement based on main products vs target
+            const achievementPercent = (mainProductsSold / targetTins) * 100;
+            
+            let performance;
+            if (achievementPercent >= 100) {
+                performance = 'Excellent';
+            } else if (achievementPercent >= 80) {
+                performance = 'Good';
+            } else if (achievementPercent >= 60) {
+                performance = 'Average';
+            } else {
+                performance = 'Poor';
+            }
+            
+            const entry = {
+                id: Date.now(),
+                salesPerson,
+                month,
+                outlets,
+                sweetener,
+                diabetasolV,
+                diabetasolA,
+                entrasol,
+                pack180g,
+                totalUnits,
+                workingDays,
+                targetTins,
+                mainProductsSold,
+                achievementPercent,
+                performance
+            };
+            
+            performanceData.push(entry);
+            saveData();
+            
+            // Clear form
+            document.getElementById('salesPerson').value = '';
+            document.getElementById('outlets').value = '';
+            document.getElementById('sweetener').value = '';
+            document.getElementById('diabetasolV').value = '';
+            document.getElementById('diabetasolA').value = '';
+            document.getElementById('entrasol').value = '';
+            document.getElementById('pack180g').value = '';
+            document.getElementById('workingDays').value = '';
+            
+            updateTable();
+            updateFilters();
+            updateSummary();
+            updateProductRankings();
+            
+            // Show success message
+            showSuccessMessage('Entry added successfully!');
+        }
+        
+        function deleteEntry(id) {
+            if (confirm('Are you sure you want to delete this entry?')) {
+                performanceData = performanceData.filter(entry => entry.id !== id);
+                saveData();
+                updateTable();
+                updateFilters();
+                updateSummary();
+                updateProductRankings();
+            }
+        }
+        
+        function updateTable() {
+            const wrapper = document.getElementById('tableWrapper');
+            const filterMonth = document.getElementById('filterMonth').value;
+            const filterPerson = document.getElementById('filterPerson').value;
+            const filterOutlet = document.getElementById('filterOutlet').value;
+            
+            let filteredData = performanceData;
+            
+            if (filterMonth) {
+                filteredData = filteredData.filter(entry => entry.month === filterMonth);
+            }
+            
+            if (filterPerson) {
+                filteredData = filteredData.filter(entry => entry.salesPerson === filterPerson);
+            }
+            
+            if (filterOutlet) {
+                // Filter by outlet using daily data
+                const salespersonIds = [];
+                if (dailyData) {
+                    Object.keys(dailyData).forEach(salesperson => {
+                        const hasOutlet = dailyData[salesperson].some(entry => entry.outlet === filterOutlet);
+                        if (hasOutlet) {
+                            salespersonIds.push(salesperson);
+                        }
+                    });
+                }
+                
+                if (salespersonIds.length > 0) {
+                    filteredData = filteredData.filter(entry => salespersonIds.includes(entry.salesPerson));
+                } else {
+                    filteredData = [];
+                }
+            }
+            
+            if (filteredData.length === 0) {
+                wrapper.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <h3>No Data Available</h3>
+                        <p>No entries match your current filters</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const tableHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Sales Person</th>
+                                <th>Month</th>
+                                <th>Outlets</th>
+                                <th>Sweetener</th>
+                                <th>Diabetasol V</th>
+                                <th>Diabetasol A</th>
+                                <th>Entrasol</th>
+                                <th>180g Pack</th>
+                                <th>Total Units</th>
+                                <th>Working Days</th>
+                                <th>Target (7/day)</th>
+                                <th>Main Products</th>
+                                <th>Achievement %</th>
+                                <th>Performance</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filteredData.map(entry => {
+                                const performanceClass = `performance-${entry.performance.toLowerCase()}`;
+                                return `
+                                    <tr>
+                                        <td><span class="salesperson-link" onclick="openSalespersonModal('${entry.salesPerson}')">${entry.salesPerson}</span></td>
+                                        <td>${new Date(entry.month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</td>
+                                        <td>${entry.outlets}</td>
+                                        <td>${entry.sweetener}</td>
+                                        <td>${entry.diabetasolV}</td>
+                                        <td>${entry.diabetasolA}</td>
+                                        <td>${entry.entrasol}</td>
+                                        <td>${entry.pack180g}</td>
+                                        <td><strong>${entry.totalUnits}</strong></td>
+                                        <td>${entry.workingDays}</td>
+                                        <td><strong>${entry.targetTins}</strong></td>
+                                        <td><strong>${entry.mainProductsSold}</strong></td>
+                                        <td><strong>${entry.achievementPercent.toFixed(1)}%</strong></td>
+                                        <td class="${performanceClass}"><strong>${entry.performance}</strong></td>
+                                        <td><button class="delete-btn" onclick="deleteEntry(${entry.id})">Delete</button></td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            wrapper.innerHTML = tableHTML;
+        }
+        
+        function updateFilters() {
+            const months = [...new Set(performanceData.map(entry => entry.month))].sort();
+            const persons = [...new Set(performanceData.map(entry => entry.salesPerson))].sort();
+            
+            // Get unique outlets from daily data and outlets list
+            const outlets = new Set();
+            
+            // Add outlets from daily data
+            if (dailyData) {
+                Object.values(dailyData).forEach(entries => {
+                    entries.forEach(entry => {
+                        if (entry.outlet) {
+                            outlets.add(entry.outlet);
+                        }
+                    });
+                });
+            }
+            
+            // Add outlets from outlets list
+            outletsList.forEach(outlet => {
+                if (outlet.status === 'Active') {
+                    outlets.add(outlet.name);
+                }
+            });
+            
+            const monthFilter = document.getElementById('filterMonth');
+            const currentMonthValue = monthFilter.value;
+            monthFilter.innerHTML = '<option value="">All Months</option>' + 
+                months.map(month => `<option value="${month}">${new Date(month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</option>`).join('');
+            monthFilter.value = currentMonthValue;
+            
+            const personFilter = document.getElementById('filterPerson');
+            const currentPersonValue = personFilter.value;
+            personFilter.innerHTML = '<option value="">All Persons</option>' + 
+                persons.map(person => `<option value="${person}">${person}</option>`).join('');
+            personFilter.value = currentPersonValue;
+            
+            const outletFilter = document.getElementById('filterOutlet');
+            const currentOutletValue = outletFilter.value;
+            outletFilter.innerHTML = '<option value="">All Outlets</option>' + 
+                Array.from(outlets).sort().map(outlet => `<option value="${outlet}">${outlet}</option>`).join('');
+            outletFilter.value = currentOutletValue;
+        }
+        
+        function filterData() {
+            updateTable();
+            updateSummary();
+            updateProductRankings();
+        }
+        
+        function updateSummary() {
+            const filterMonth = document.getElementById('filterMonth').value;
+            const filterPerson = document.getElementById('filterPerson').value;
+            const filterOutlet = document.getElementById('filterOutlet').value;
+            
+            let filteredData = performanceData;
+            
+            if (filterMonth) {
+                filteredData = filteredData.filter(entry => entry.month === filterMonth);
+            }
+            
+            if (filterPerson) {
+                filteredData = filteredData.filter(entry => entry.salesPerson === filterPerson);
+            }
+            
+            if (filterOutlet) {
+                // Filter by outlet using daily data
+                const salespersonIds = [];
+                if (dailyData) {
+                    Object.keys(dailyData).forEach(salesperson => {
+                        const hasOutlet = dailyData[salesperson].some(entry => entry.outlet === filterOutlet);
+                        if (hasOutlet) {
+                            salespersonIds.push(salesperson);
+                        }
+                    });
+                }
+                
+                if (salespersonIds.length > 0) {
+                    filteredData = filteredData.filter(entry => salespersonIds.includes(entry.salesPerson));
+                } else {
+                    filteredData = [];
+                }
+            }
+            
+            const totalEntries = filteredData.length;
+            const totalUnitsSum = filteredData.reduce((sum, entry) => sum + entry.totalUnits, 0);
+            const avgAchievement = totalEntries > 0 ? 
+                filteredData.reduce((sum, entry) => sum + entry.achievementPercent, 0) / totalEntries : 0;
+            
+            let bestPerformer = '-';
+            if (totalEntries > 0) {
+                const performerData = {};
+                filteredData.forEach(entry => {
+                    if (!performerData[entry.salesPerson]) {
+                        performerData[entry.salesPerson] = {
+                            totalUnits: 0,
+                            achievement: 0,
+                            count: 0
+                        };
+                    }
+                    performerData[entry.salesPerson].totalUnits += entry.totalUnits;
+                    performerData[entry.salesPerson].achievement += entry.achievementPercent;
+                    performerData[entry.salesPerson].count++;
+                });
+                
+                bestPerformer = Object.keys(performerData).reduce((a, b) => 
+                    performerData[a].achievement / performerData[a].count > 
+                    performerData[b].achievement / performerData[b].count ? a : b);
+            }
+            
+            document.getElementById('totalEntries').textContent = totalEntries;
+            document.getElementById('totalSalesSum').textContent = totalUnitsSum.toLocaleString();
+            document.getElementById('avgAchievement').textContent = avgAchievement.toFixed(1) + '%';
+            document.getElementById('bestPerformer').textContent = bestPerformer;
+        }
+        
+        function updateProductRankings() {
+            const filterMonth = document.getElementById('filterMonth').value;
+            const filterPerson = document.getElementById('filterPerson').value;
+            const filterOutlet = document.getElementById('filterOutlet').value;
+            
+            let filteredData = performanceData;
+            
+            if (filterMonth) {
+                filteredData = filteredData.filter(entry => entry.month === filterMonth);
+            }
+            
+            if (filterPerson) {
+                filteredData = filteredData.filter(entry => entry.salesPerson === filterPerson);
+            }
+            
+            if (filterOutlet) {
+                // Filter by outlet using daily data
+                const salespersonIds = [];
+                if (dailyData) {
+                    Object.keys(dailyData).forEach(salesperson => {
+                        const hasOutlet = dailyData[salesperson].some(entry => entry.outlet === filterOutlet);
+                        if (hasOutlet) {
+                            salespersonIds.push(salesperson);
+                        }
+                    });
+                }
+                
+                if (salespersonIds.length > 0) {
+                    filteredData = filteredData.filter(entry => salespersonIds.includes(entry.salesPerson));
+                } else {
+                    filteredData = [];
+                }
+            }
+            
+            if (filteredData.length === 0) {
+                document.getElementById('productRankings').innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <p>Rankings will appear once you add sales data</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const products = ['sweetener', 'diabetasolV', 'diabetasolA', 'entrasol', 'pack180g'];
+            const productNames = {
+                'sweetener': 'Diabetasol Sweetener',
+                'diabetasolV': 'Diabetasol V',
+                'diabetasolA': 'Diabetasol A',
+                'entrasol': 'Entrasol',
+                'pack180g': 'Diabetasol 180g Pack'
+            };
+            
+            let rankingsHTML = '';
+            
+            products.forEach(product => {
+                const salesByPerson = {};
+                
+                filteredData.forEach(entry => {
+                    if (!salesByPerson[entry.salesPerson]) {
+                        salesByPerson[entry.salesPerson] = 0;
+                    }
+                    salesByPerson[entry.salesPerson] += entry[product];
+                });
+                
+                const sortedSales = Object.entries(salesByPerson)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3);
+                
+                rankingsHTML += `
+                    <div class="ranking-card">
+                        <h3>${productNames[product]}</h3>
+                        ${sortedSales.length > 0 ? sortedSales.map((sale, index) => {
+                            const medals = ['🥇', '🥈', '🥉'];
+                            return `
+                                <div class="ranking-item">
+                                    <div class="medal">${medals[index]}</div>
+                                    <div class="ranking-info">
+                                        <div class="ranking-name">${sale[0]}</div>
+                                        <div class="ranking-units">${sale[1]} units</div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('') : '<p>No sales data</p>'}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('productRankings').innerHTML = rankingsHTML;
+        }
+        
+        function exportToExcel() {
+            if (performanceData.length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            const ws = XLSX.utils.json_to_sheet(performanceData.map(entry => ({
+                'Sales Person': entry.salesPerson,
+                'Month': new Date(entry.month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+                'Outlets': entry.outlets,
+                'Sweetener': entry.sweetener,
+                'Diabetasol V': entry.diabetasolV,
+                'Diabetasol A': entry.diabetasolA,
+                'Entrasol': entry.entrasol,
+                '180g Pack': entry.pack180g,
+                'Total Units': entry.totalUnits,
+                'Working Days': entry.workingDays,
+                'Target (7/day)': entry.targetTins,
+                'Main Products Sold': entry.mainProductsSold,
+                'Achievement %': entry.achievementPercent.toFixed(1) + '%',
+                'Performance': entry.performance
+            })));
+            
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Sales Performance');
+            XLSX.writeFile(wb, 'Sales_Performance_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+        }
+        
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+                performanceData = [];
+                dailyData = {};
+                outletData = {};
+                outletsList = [];
+                saveData();
+                updateTable();
+                updateFilters();
+                updateSummary();
+                updateProductRankings();
+            }
+        }
+        
+        function sendToBoss() {
+            if (performanceData.length === 0) {
+                alert('No data to send');
+                return;
+            }
+            
+            // Create a shareable link with the current data
+            const dataString = btoa(JSON.stringify({
+                performanceData,
+                dailyData,
+                outletData,
+                outletsList
+            }));
+            const shareableLink = window.location.origin + window.location.pathname + '?data=' + dataString;
+            
+            // Copy the link to clipboard
+            navigator.clipboard.writeText(shareableLink).then(() => {
+                // Show success message
+                showSuccessMessage('Data link copied to clipboard!');
+                
+                // Optionally, open email client with the link
+                const subject = 'Sales Performance Report';
+                const body = 'Please find the sales performance report at the following link:\n\n' + shareableLink;
+                window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+            }).catch(err => {
+                console.error('Failed to copy link: ', err);
+                alert('Failed to copy link to clipboard. Please try again.');
+            });
+        }
+        
+        // Outlet Management Functions
+        function openOutletManagementModal() {
+            document.getElementById('outletManagementModal').style.display = 'block';
+            updateOutletsList();
+        }
+        
+        function addOutlet() {
+            const name = document.getElementById('outletName').value.trim();
+            const code = document.getElementById('outletCode').value.trim();
+            const location = document.getElementById('outletLocation').value.trim();
+            const contact = document.getElementById('outletContact').value.trim();
+            const phone = document.getElementById('outletPhone').value.trim();
+            const email = document.getElementById('outletEmail').value.trim();
+            const type = document.getElementById('outletType').value;
+            const status = document.getElementById('outletStatus').value;
+            const notes = document.getElementById('outletNotes').value.trim();
+            
+            if (!name) {
+                alert('Please enter outlet name');
+                return;
+            }
+            
+            // Check if outlet already exists
+            if (outletsList.some(outlet => outlet.name.toLowerCase() === name.toLowerCase())) {
+                alert('Outlet with this name already exists');
+                return;
+            }
+            
+            const outlet = {
+                id: Date.now(),
+                name,
+                code,
+                location,
+                contact,
+                phone,
+                email,
+                type,
+                status,
+                notes,
+                createdAt: new Date().toISOString()
+            };
+            
+            outletsList.push(outlet);
+            saveData();
+            
+            // Clear form
+            clearOutletForm();
+            
+            // Update outlets list
+            updateOutletsList();
+            
+            // Update filters
+            updateFilters();
+            
+            // Show success message
+            showSuccessMessage('Outlet added successfully!');
+        }
+        
+        function clearOutletForm() {
+            document.getElementById('outletName').value = '';
+            document.getElementById('outletCode').value = '';
+            document.getElementById('outletLocation').value = '';
+            document.getElementById('outletContact').value = '';
+            document.getElementById('outletPhone').value = '';
+            document.getElementById('outletEmail').value = '';
+            document.getElementById('outletType').value = '';
+            document.getElementById('outletStatus').value = 'Active';
+            document.getElementById('outletNotes').value = '';
+        }
+        
+        function updateOutletsList() {
+            const container = document.getElementById('outletsList');
+            
+            if (outletsList.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                        <h3>No Outlets Added Yet</h3>
+                        <p>Add your first outlet using the form above</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const outletsHTML = outletsList.map(outlet => {
+                const statusColor = outlet.status === 'Active' ? '#10b981' : 
+                                   outlet.status === 'Inactive' ? '#ef4444' : '#f59e0b';
+                
+                return `
+                    <div class="outlet-card">
+                        <div class="outlet-card-header">
+                            <div class="outlet-card-title">${outlet.name}</div>
+                            <div class="outlet-card-actions">
+                                <button class="edit-btn" onclick="editOutlet(${outlet.id})">Edit</button>
+                                <button class="delete-btn" onclick="deleteOutlet(${outlet.id})">Delete</button>
+                            </div>
+                        </div>
+                        <div class="outlet-card-body">
+                            ${outlet.code ? `<div class="outlet-detail">
+                                <div class="outlet-detail-label">Code</div>
+                                <div class="outlet-detail-value">${outlet.code}</div>
+                            </div>` : ''}
+                            ${outlet.location ? `<div class="outlet-detail">
+                                <div class="outlet-detail-label">Location</div>
+                                <div class="outlet-detail-value">${outlet.location}</div>
+                            </div>` : ''}
+                            ${outlet.contact ? `<div class="outlet-detail">
+                                <div class="outlet-detail-label">Contact</div>
+                                <div class="outlet-detail-value">${outlet.contact}</div>
+                            </div>` : ''}
+                            ${outlet.phone ? `<div class="outlet-detail">
+                                <div class="outlet-detail-label">Phone</div>
+                                <div class="outlet-detail-value">${outlet.phone}</div>
+                            </div>` : ''}
+                            ${outlet.type ? `<div class="outlet-detail">
+                                <div class="outlet-detail-label">Type</div>
+                                <div class="outlet-detail-value">${outlet.type}</div>
+                            </div>` : ''}
+                            <div class="outlet-detail">
+                                <div class="outlet-detail-label">Status</div>
+                                <div class="outlet-detail-value" style="color: ${statusColor}; font-weight: 700;">
+                                    ${outlet.status}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = outletsHTML;
+        }
+        
+        function editOutlet(id) {
+            const outlet = outletsList.find(o => o.id === id);
+            if (!outlet) return;
+            
+            // Fill form with outlet data
+            document.getElementById('outletName').value = outlet.name;
+            document.getElementById('outletCode').value = outlet.code || '';
+            document.getElementById('outletLocation').value = outlet.location || '';
+            document.getElementById('outletContact').value = outlet.contact || '';
+            document.getElementById('outletPhone').value = outlet.phone || '';
+            document.getElementById('outletEmail').value = outlet.email || '';
+            document.getElementById('outletType').value = outlet.type || '';
+            document.getElementById('outletStatus').value = outlet.status;
+            document.getElementById('outletNotes').value = outlet.notes || '';
+            
+            // Remove the outlet from list (will be re-added when form is submitted)
+            outletsList = outletsList.filter(o => o.id !== id);
+            updateOutletsList();
+            
+            // Scroll to form
+            document.getElementById('outletName').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function deleteOutlet(id) {
+            const outlet = outletsList.find(o => o.id === id);
+            if (!outlet) return;
+            
+            if (confirm(`Are you sure you want to delete outlet "${outlet.name}"? This will also delete all performance data for this outlet.`)) {
+                // Remove outlet from list
+                outletsList = outletsList.filter(o => o.id !== id);
+                
+                // Remove outlet data from daily data
+                Object.keys(dailyData).forEach(salesperson => {
+                    dailyData[salesperson] = dailyData[salesperson].filter(entry => entry.outlet !== outlet.name);
+                });
+                
+                // Remove outlet from outlet data
+                delete outletData[outlet.name];
+                
+                saveData();
+                updateOutletsList();
+                updateFilters();
+                
+                // Show success message
+                showSuccessMessage('Outlet deleted successfully!');
+            }
+        }
+        
+        function openSalespersonModal(salesperson) {
+            currentSalesperson = salesperson;
+            document.getElementById('modalTitle').textContent = salesperson + ' - Performance Details';
+            document.getElementById('salespersonModal').style.display = 'block';
+            
+            // Initialize with monthly summary tab
+            openTab({ target: document.querySelector('#salespersonModal .tab.active') }, 'monthly');
+            updateMonthlySummary();
+            updateDailyEntries();
+            updateOutletDetails();
+        }
+        
+        function openOutletModal() {
+            document.getElementById('outletModalTitle').textContent = 'Outlet Performance';
+            document.getElementById('outletModal').style.display = 'block';
+            
+            // Check if there are any outlets
+            const activeOutlets = outletsList.filter(outlet => outlet.status === 'Active');
+            
+            if (activeOutlets.length === 0) {
+                // Show warning and hide other sections
+                document.getElementById('outletWarning').style.display = 'block';
+                document.getElementById('outletSelection').style.display = 'none';
+                document.getElementById('outletTabs').style.display = 'none';
+            } else {
+                // Hide warning and show outlet selection
+                document.getElementById('outletWarning').style.display = 'none';
+                document.getElementById('outletSelection').style.display = 'block';
+                document.getElementById('outletTabs').style.display = 'flex';
+                
+                // Populate outlet dropdown
+                const outletSelect = document.getElementById('selectOutletForPerformance');
+                outletSelect.innerHTML = '<option value="">Select an outlet to view performance</option>' + 
+                    activeOutlets.map(outlet => `<option value="${outlet.name}">${outlet.name}</option>`).join('');
+            }
+        }
+        
+        function loadOutletPerformance() {
+            const selectedOutlet = document.getElementById('selectOutletForPerformance').value;
+            if (!selectedOutlet) return;
+            
+            currentOutlet = selectedOutlet;
+            document.getElementById('outletModalTitle').textContent = selectedOutlet + ' - Performance Details';
+            
+            // Initialize with summary tab
+            openOutletTab({ target: document.querySelector('#outletModal .tab.active') }, 'outletSummary');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            if (modalId === 'salespersonModal') {
+                currentSalesperson = null;
+            } else if (modalId === 'outletModal') {
+                currentOutlet = null;
+            }
+        }
+        
+        function openTab(evt, tabName) {
+            // Hide all tab content
+            const tabContents = document.querySelectorAll('#salespersonModal .tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('#salespersonModal .tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show the specific tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to the button that opened the tab
+            evt.currentTarget.classList.add('active');
+            
+            // Update content based on the selected tab
+            if (tabName === 'monthly') {
+                updateMonthlySummary();
+            } else if (tabName === 'daily') {
+                updateDailyEntries();
+            } else if (tabName === 'outlets') {
+                updateOutletDetails();
+            }
+        }
+        
+        function openOutletTab(evt, tabName) {
+            // Hide all tab content
+            const tabContents = document.querySelectorAll('#outletModal .tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('#outletModal .tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show the specific tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to the button that opened the tab
+            evt.currentTarget.classList.add('active');
+            
+            // Update content based on the selected tab
+            if (tabName === 'outletSummary') {
+                updateOutletSummary();
+            } else if (tabName === 'outletDaily') {
+                updateOutletDailyEntries();
+            } else if (tabName === 'outletSalespersons') {
+                updateOutletSalespersons();
+            }
+        }
+        
+        function updateMonthlySummary() {
+            if (!currentSalesperson) return;
+            
+            const salespersonData = performanceData.filter(entry => entry.salesPerson === currentSalesperson);
+            
+            if (salespersonData.length === 0) {
+                document.getElementById('monthlySummary').innerHTML = '<p>No data available for this salesperson.</p>';
+                return;
+            }
+            
+            // Calculate totals across all months
+            const totalOutlets = salespersonData.reduce((sum, entry) => sum + entry.outlets, 0);
+            const totalUnits = salespersonData.reduce((sum, entry) => sum + entry.totalUnits, 0);
+            const totalWorkingDays = salespersonData.reduce((sum, entry) => sum + entry.workingDays, 0);
+            const totalTarget = salespersonData.reduce((sum, entry) => sum + entry.targetTins, 0);
+            const totalMainProducts = salespersonData.reduce((sum, entry) => sum + entry.mainProductsSold, 0);
+            const avgAchievement = salespersonData.reduce((sum, entry) => sum + entry.achievementPercent, 0) / salespersonData.length;
+            
+            // Group by month for chart
+            const monthlyData = {};
+            salespersonData.forEach(entry => {
+                if (!monthlyData[entry.month]) {
+                    monthlyData[entry.month] = {
+                        month: entry.month,
+                        achievement: 0,
+                        units: 0
+                    };
+                }
+                monthlyData[entry.month].achievement += entry.achievementPercent;
+                monthlyData[entry.month].units += entry.totalUnits;
+            });
+            
+            // Calculate average achievement per month
+            Object.keys(monthlyData).forEach(month => {
+                const monthEntries = salespersonData.filter(entry => entry.month === month);
+                monthlyData[month].achievement /= monthEntries.length;
+            });
+            
+            // Sort months
+            const sortedMonths = Object.keys(monthlyData).sort();
+            
+            // Update monthly summary cards
+            document.getElementById('monthlySummary').innerHTML = `
+                <div class="monthly-card">
+                    <h3>Total Outlets</h3>
+                    <div class="value">${totalOutlets}</div>
+                </div>
+                <div class="monthly-card">
+                    <h3>Total Units Sold</h3>
+                    <div class="value">${totalUnits}</div>
+                </div>
+                <div class="monthly-card">
+                    <h3>Total Working Days</h3>
+                    <div class="value">${totalWorkingDays}</div>
+                </div>
+                <div class="monthly-card">
+                    <h3>Total Target</h3>
+                    <div class="value">${totalTarget}</div>
+                </div>
+                <div class="monthly-card">
+                    <h3>Main Products Sold</h3>
+                    <div class="value">${totalMainProducts}</div>
+                </div>
+                <div class="monthly-card">
+                    <h3>Average Achievement</h3>
+                    <div class="value">${avgAchievement.toFixed(1)}%</div>
+                </div>
+            `;
+            
+            // Create performance chart
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+            
+            performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedMonths.map(month => new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })),
+                    datasets: [
+                        {
+                            label: 'Achievement %',
+                            data: sortedMonths.map(month => monthlyData[month].achievement),
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Units Sold',
+                            data: sortedMonths.map(month => monthlyData[month].units),
+                            borderColor: '#764ba2',
+                            backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Monthly Performance Trend'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Achievement %'
+                            }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Units Sold'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateDailyEntries() {
+            if (!currentSalesperson) return;
+            
+            // Initialize daily data for this salesperson if not exists
+            if (!dailyData[currentSalesperson]) {
+                dailyData[currentSalesperson] = [];
+            }
+            
+            const entries = dailyData[currentSalesperson];
+            
+            // Check if there are any outlets available
+            const activeOutlets = outletsList.filter(outlet => outlet.status === 'Active');
+            
+            if (activeOutlets.length === 0) {
+                // Show quick add outlet form
+                document.getElementById('quickOutletAdd').style.display = 'block';
+                document.getElementById('dailyEntryForm').style.display = 'none';
+            } else {
+                // Hide quick add and show normal form
+                document.getElementById('quickOutletAdd').style.display = 'none';
+                document.getElementById('dailyEntryForm').style.display = 'grid';
+                
+                // Update outlet dropdown
+                updateOutletDropdown();
+            }
+            
+            if (entries.length === 0) {
+                document.getElementById('dailyEntries').innerHTML = '<p>No daily entries available for this salesperson.</p>';
+                return;
+            }
+            
+            // Sort entries by date (newest first)
+            const sortedEntries = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Generate HTML for daily entries
+            const entriesHTML = sortedEntries.map((entry, index) => {
+                const totalMainProducts = entry.diabetasolV + entry.diabetasolA + entry.entrasol;
+                const target = 7; // 7 tins per day
+                const achievement = (totalMainProducts / target) * 100;
+                
+                let performance;
+                if (achievement >= 100) {
+                    performance = 'Excellent';
+                } else if (achievement >= 80) {
+                    performance = 'Good';
+                } else if (achievement >= 60) {
+                    performance = 'Average';
+                } else {
+                    performance = 'Poor';
+                }
+                
+                const performanceClass = `performance-${performance.toLowerCase()}-bg`;
+                
+                return `
+                    <div class="daily-entry-item">
+                        <div class="daily-entry-info">
+                            <div class="daily-entry-date">${new Date(entry.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                            <div class="daily-entry-details">
+                                <span>Outlet: ${entry.outlet || 'Not specified'}</span>
+                                <span>Diabetasol V: ${entry.diabetasolV}</span>
+                                <span>Diabetasol A: ${entry.diabetasolA}</span>
+                                <span>Entrasol: ${entry.entrasol}</span>
+                                <span>Sweetener: ${entry.sweetener || 0}</span>
+                                <span>Dsol 180g: ${entry.pack180g || 0}</span>
+                            </div>
+                        </div>
+                        <div class="daily-entry-performance ${performanceClass}">${performance} (${achievement.toFixed(1)}%)</div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="edit-btn" onclick="openEditModal(${index})">Edit</button>
+                            <button class="delete-btn" onclick="deleteDailyEntry(${index})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('dailyEntries').innerHTML = entriesHTML;
+        }
+        
+        function updateOutletDropdown() {
+            if (!currentSalesperson) return;
+            
+            // Get active outlets
+            const activeOutlets = outletsList.filter(outlet => outlet.status === 'Active');
+            
+            // Update outlet dropdown
+            const outletSelect = document.getElementById('dailyOutlet');
+            outletSelect.innerHTML = '<option value="">Select Outlet</option>' + 
+                activeOutlets.map(outlet => `<option value="${outlet.name}">${outlet.name}</option>`).join('');
+        }
+        
+        function quickAddOutlet() {
+            const outletName = document.getElementById('quickOutletName').value.trim();
+            
+            if (!outletName) {
+                alert('Please enter outlet name');
+                return;
+            }
+            
+            // Check if outlet already exists
+            if (outletsList.some(outlet => outlet.name.toLowerCase() === outletName.toLowerCase())) {
+                alert('Outlet with this name already exists');
+                return;
+            }
+            
+            const outlet = {
+                id: Date.now(),
+                name: outletName,
+                status: 'Active',
+                createdAt: new Date().toISOString()
+            };
+            
+            outletsList.push(outlet);
+            saveData();
+            
+            // Clear quick add form
+            document.getElementById('quickOutletName').value = '';
+            
+            // Update daily entries view
+            updateDailyEntries();
+            
+            // Update filters
+            updateFilters();
+            
+            // Show success message
+            showSuccessMessage('Outlet added successfully!');
+        }
+        
+        function addDailyEntry() {
+            if (!currentSalesperson) return;
+            
+            const date = document.getElementById('dailyDate').value;
+            const outlet = document.getElementById('dailyOutlet').value;
+            const diabetasolV = parseInt(document.getElementById('dailyDiabetasolV').value) || 0;
+            const diabetasolA = parseInt(document.getElementById('dailyDiabetasolA').value) || 0;
+            const entrasol = parseInt(document.getElementById('dailyEntrasol').value) || 0;
+            const sweetener = parseInt(document.getElementById('dailySweetener').value) || 0;
+            const pack180g = parseInt(document.getElementById('dailyPack180g').value) || 0;
+            
+            if (!date) {
+                alert('Please select a date');
+                return;
+            }
+            
+            if (!outlet) {
+                alert('Please select an outlet');
+                return;
+            }
+            
+            if (diabetasolV === 0 && diabetasolA === 0 && entrasol === 0 && sweetener === 0 && pack180g === 0) {
+                alert('Please enter at least one product quantity');
+                return;
+            }
+            
+            // Initialize daily data for this salesperson if not exists
+            if (!dailyData[currentSalesperson]) {
+                dailyData[currentSalesperson] = [];
+            }
+            
+            // Initialize outlet data if not exists
+            if (!outletData[outlet]) {
+                outletData[outlet] = [];
+            }
+            
+            // Check if an entry for this date and outlet already exists
+            const existingEntryIndex = dailyData[currentSalesperson].findIndex(entry => 
+                entry.date === date && entry.outlet === outlet
+            );
+            
+            const entry = {
+                date,
+                outlet,
+                diabetasolV,
+                diabetasolA,
+                entrasol,
+                sweetener,
+                pack180g,
+                salesperson: currentSalesperson
+            };
+            
+            if (existingEntryIndex >= 0) {
+                // Update existing entry
+                dailyData[currentSalesperson][existingEntryIndex] = entry;
+            } else {
+                // Add new entry
+                dailyData[currentSalesperson].push(entry);
+            }
+            
+            // Also add to outlet data
+            const existingOutletEntryIndex = outletData[outlet].findIndex(entry => 
+                entry.date === date && entry.salesperson === currentSalesperson
+            );
+            
+            if (existingOutletEntryIndex >= 0) {
+                // Update existing entry
+                outletData[outlet][existingOutletEntryIndex] = entry;
+            } else {
+                // Add new entry
+                outletData[outlet].push(entry);
+            }
+            
+            saveData();
+            
+            // Clear form
+            document.getElementById('dailyDate').value = '';
+            document.getElementById('dailyOutlet').value = '';
+            document.getElementById('dailyDiabetasolV').value = '';
+            document.getElementById('dailyDiabetasolA').value = '';
+            document.getElementById('dailyEntrasol').value = '';
+            document.getElementById('dailySweetener').value = '';
+            document.getElementById('dailyPack180g').value = '';
+            
+            // Update daily entries display
+            updateDailyEntries();
+            
+            // Show success message
+            showSuccessMessage('Daily entry added successfully!');
+        }
+        
+        function openEditModal(index) {
+            editingEntryIndex = index;
+            const entry = dailyData[currentSalesperson][index];
+            
+            // Fill form with entry data
+            document.getElementById('editDailyDate').value = entry.date;
+            document.getElementById('editDailyOutlet').value = entry.outlet;
+            document.getElementById('editDailyDiabetasolV').value = entry.diabetasolV;
+            document.getElementById('editDailyDiabetasolA').value = entry.diabetasolA;
+            document.getElementById('editDailyEntrasol').value = entry.entrasol;
+            document.getElementById('editDailySweetener').value = entry.sweetener || 0;
+            document.getElementById('editDailyPack180g').value = entry.pack180g || 0;
+            
+            // Update outlet dropdown
+            const activeOutlets = outletsList.filter(outlet => outlet.status === 'Active');
+            const outletSelect = document.getElementById('editDailyOutlet');
+            outletSelect.innerHTML = '<option value="">Select Outlet</option>' + 
+                activeOutlets.map(outlet => `<option value="${outlet.name}" ${outlet.name === entry.outlet ? 'selected' : ''}>${outlet.name}</option>`).join('');
+            
+            // Show modal
+            document.getElementById('editDailyEntryModal').style.display = 'block';
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editDailyEntryModal').style.display = 'none';
+            editingEntryIndex = null;
+        }
+        
+        function updateDailyEntry() {
+            if (editingEntryIndex === null) return;
+            
+            const date = document.getElementById('editDailyDate').value;
+            const outlet = document.getElementById('editDailyOutlet').value;
+            const diabetasolV = parseInt(document.getElementById('editDailyDiabetasolV').value) || 0;
+            const diabetasolA = parseInt(document.getElementById('editDailyDiabetasolA').value) || 0;
+            const entrasol = parseInt(document.getElementById('editDailyEntrasol').value) || 0;
+            const sweetener = parseInt(document.getElementById('editDailySweetener').value) || 0;
+            const pack180g = parseInt(document.getElementById('editDailyPack180g').value) || 0;
+            
+            if (!date) {
+                alert('Please select a date');
+                return;
+            }
+            
+            if (!outlet) {
+                alert('Please select an outlet');
+                return;
+            }
+            
+            if (diabetasolV === 0 && diabetasolA === 0 && entrasol === 0 && sweetener === 0 && pack180g === 0) {
+                alert('Please enter at least one product quantity');
+                return;
+            }
+            
+            // Update entry in daily data
+            const entry = {
+                date,
+                outlet,
+                diabetasolV,
+                diabetasolA,
+                entrasol,
+                sweetener,
+                pack180g,
+                salesperson: currentSalesperson
+            };
+            
+            dailyData[currentSalesperson][editingEntryIndex] = entry;
+            
+            // Update entry in outlet data
+            const outletEntries = outletData[outlet] || [];
+            const existingOutletEntryIndex = outletEntries.findIndex(e => 
+                e.date === date && e.salesperson === currentSalesperson
+            );
+            
+            if (existingOutletEntryIndex >= 0) {
+                outletData[outlet][existingOutletEntryIndex] = entry;
+            } else {
+                outletData[outlet].push(entry);
+            }
+            
+            saveData();
+            
+            // Close modal
+            closeEditModal();
+            
+            // Update daily entries display
+            updateDailyEntries();
+            
+            // Show success message
+            showSuccessMessage('Daily entry updated successfully!');
+        }
+        
+        function deleteDailyEntry(index) {
+            if (confirm('Are you sure you want to delete this daily entry?')) {
+                const entry = dailyData[currentSalesperson][index];
+                
+                // Remove from daily data
+                dailyData[currentSalesperson].splice(index, 1);
+                
+                // Remove from outlet data
+                if (outletData[entry.outlet]) {
+                    outletData[entry.outlet] = outletData[entry.outlet].filter(e => 
+                        !(e.date === entry.date && e.salesperson === currentSalesperson)
+                    );
+                }
+                
+                saveData();
+                updateDailyEntries();
+                
+                // Show success message
+                showSuccessMessage('Daily entry deleted successfully!');
+            }
+        }
+        
+        function updateOutletDetails() {
+            if (!currentSalesperson) return;
+            
+            const salespersonData = performanceData.filter(entry => entry.salesPerson === currentSalesperson);
+            
+            if (salespersonData.length === 0) {
+                document.getElementById('outletDetails').innerHTML = '<p>No outlet data available for this salesperson.</p>';
+                return;
+            }
+            
+            // Get outlet performance from daily data
+            const outletPerformance = {};
+            
+            if (dailyData[currentSalesperson]) {
+                dailyData[currentSalesperson].forEach(entry => {
+                    if (!outletPerformance[entry.outlet]) {
+                        outletPerformance[entry.outlet] = {
+                            totalUnits: 0,
+                            mainProducts: 0,
+                            days: 0,
+                            diabetasolV: 0,
+                            diabetasolA: 0,
+                            entrasol: 0,
+                            sweetener: 0,
+                            pack180g: 0
+                        };
+                    }
+                    
+                    outletPerformance[entry.outlet].totalUnits += entry.diabetasolV + entry.diabetasolA + entry.entrasol + (entry.sweetener || 0) + (entry.pack180g || 0);
+                    outletPerformance[entry.outlet].mainProducts += entry.diabetasolV + entry.diabetasolA + entry.entrasol;
+                    outletPerformance[entry.outlet].days += 1;
+                    outletPerformance[entry.outlet].diabetasolV += entry.diabetasolV;
+                    outletPerformance[entry.outlet].diabetasolA += entry.diabetasolA;
+                    outletPerformance[entry.outlet].entrasol += entry.entrasol;
+                    outletPerformance[entry.outlet].sweetener += entry.sweetener || 0;
+                    outletPerformance[entry.outlet].pack180g += entry.pack180g || 0;
+                });
+            }
+            
+            // Generate HTML for outlet details
+            let outletDetailsHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Outlet</th>
+                                <th>Days Worked</th>
+                                <th>Diabetasol V</th>
+                                <th>Diabetasol A</th>
+                                <th>Entrasol</th>
+                                <th>Sweetener</th>
+                                <th>Dsol 180g</th>
+                                <th>Total Units</th>
+                                <th>Main Products</th>
+                                <th>Avg. Daily</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            Object.keys(outletPerformance).forEach(outlet => {
+                const data = outletPerformance[outlet];
+                const avgDaily = data.mainProducts / data.days;
+                
+                outletDetailsHTML += `
+                    <tr>
+                        <td><span class="outlet-link" onclick="openOutletDetailModal('${outlet}')">${outlet}</span></td>
+                        <td>${data.days}</td>
+                        <td>${data.diabetasolV}</td>
+                        <td>${data.diabetasolA}</td>
+                        <td>${data.entrasol}</td>
+                        <td>${data.sweetener}</td>
+                        <td>${data.pack180g}</td>
+                        <td><strong>${data.totalUnits}</strong></td>
+                        <td><strong>${data.mainProducts}</strong></td>
+                        <td><strong>${avgDaily.toFixed(1)}</strong></td>
+                        <td><button class="delete-btn" onclick="deleteOutletData('${outlet}')">Delete</button></td>
+                    </tr>
+                `;
+            });
+            
+            outletDetailsHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('outletDetails').innerHTML = outletDetailsHTML;
+        }
+        
+        function openOutletDetailModal(outlet) {
+            currentOutlet = outlet;
+            document.getElementById('outletModalTitle').textContent = outlet + ' - Performance Details';
+            document.getElementById('outletModal').style.display = 'block';
+            
+            // Hide warning and show tabs
+            document.getElementById('outletWarning').style.display = 'none';
+            document.getElementById('outletSelection').style.display = 'none';
+            document.getElementById('outletTabs').style.display = 'flex';
+            
+            // Initialize with summary tab
+            openOutletTab({ target: document.querySelector('#outletModal .tab.active') }, 'outletSummary');
+        }
+        
+        function updateOutletSummary() {
+            if (!currentOutlet) return;
+            
+            // Get outlet data
+            const entries = outletData[currentOutlet] || [];
+            
+            if (entries.length === 0) {
+                document.getElementById('outletMetrics').innerHTML = '<p>No data available for this outlet.</p>';
+                document.getElementById('outletDayGrid').innerHTML = '';
+                return;
+            }
+            
+            // Calculate totals
+            const totalDays = entries.length;
+            const totalUnits = entries.reduce((sum, entry) => sum + entry.diabetasolV + entry.diabetasolA + entry.entrasol + (entry.sweetener || 0) + (entry.pack180g || 0), 0);
+            const totalMainProducts = entries.reduce((sum, entry) => sum + entry.diabetasolV + entry.diabetasolA + entry.entrasol, 0);
+            const avgDaily = totalMainProducts / totalDays;
+            
+            // Get unique salespersons
+            const salespersons = [...new Set(entries.map(entry => entry.salesperson))];
+            
+            // Update metrics
+            document.getElementById('outletMetrics').innerHTML = `
+                <div class="outlet-metric">
+                    <div class="outlet-metric-value">${totalDays}</div>
+                    <div class="outlet-metric-label">Days Worked</div>
+                </div>
+                <div class="outlet-metric">
+                    <div class="outlet-metric-value">${totalUnits}</div>
+                    <div class="outlet-metric-label">Total Units</div>
+                </div>
+                <div class="outlet-metric">
+                    <div class="outlet-metric-value">${totalMainProducts}</div>
+                    <div class="outlet-metric-label">Main Products</div>
+                </div>
+                <div class="outlet-metric">
+                    <div class="outlet-metric-value">${avgDaily.toFixed(1)}</div>
+                    <div class="outlet-metric-label">Avg. Daily</div>
+                </div>
+                <div class="outlet-metric">
+                    <div class="outlet-metric-value">${salespersons.length}</div>
+                    <div class="outlet-metric-label">Salespersons</div>
+                </div>
+            `;
+            
+            // Generate day cards
+            const sortedEntries = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            const dayCardsHTML = sortedEntries.slice(0, 30).map(entry => {
+                const totalMainProducts = entry.diabetasolV + entry.diabetasolA + entry.entrasol;
+                const target = 7; // 7 tins per day
+                const achievement = (totalMainProducts / target) * 100;
+                
+                let performance;
+                let performanceClass;
+                
+                if (achievement >= 100) {
+                    performance = 'Excellent';
+                    performanceClass = 'performance-excellent';
+                } else if (achievement >= 80) {
+                    performance = 'Good';
+                    performanceClass = 'performance-good';
+                } else if (achievement >= 60) {
+                    performance = 'Average';
+                    performanceClass = 'performance-average';
+                } else {
+                    performance = 'Poor';
+                    performanceClass = 'performance-poor';
+                }
+                
+                return `
+                    <div class="outlet-day-card">
+                        <div class="outlet-day-date">${new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                        <div class="outlet-day-performance ${performanceClass}">${performance}</div>
+                        <div class="outlet-day-units">${totalMainProducts} units</div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('outletDayGrid').innerHTML = dayCardsHTML;
+        }
+        
+        function updateOutletDailyEntries() {
+            if (!currentOutlet) return;
+            
+            // Get outlet data
+            const entries = outletData[currentOutlet] || [];
+            
+            if (entries.length === 0) {
+                document.getElementById('outletDailyEntries').innerHTML = '<p>No daily entries available for this outlet.</p>';
+                return;
+            }
+            
+            // Sort entries by date (newest first)
+            const sortedEntries = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Generate HTML for daily entries
+            const entriesHTML = sortedEntries.map(entry => {
+                const totalMainProducts = entry.diabetasolV + entry.diabetasolA + entry.entrasol;
+                const target = 7; // 7 tins per day
+                const achievement = (totalMainProducts / target) * 100;
+                
+                let performance;
+                if (achievement >= 100) {
+                    performance = 'Excellent';
+                } else if (achievement >= 80) {
+                    performance = 'Good';
+                } else if (achievement >= 60) {
+                    performance = 'Average';
+                } else {
+                    performance = 'Poor';
+                }
+                
+                const performanceClass = `performance-${performance.toLowerCase()}-bg`;
+                
+                return `
+                    <div class="outlet-entry-item">
+                        <div class="outlet-entry-info">
+                            <div class="outlet-entry-date">${new Date(entry.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                            <div class="outlet-entry-details">
+                                <span>Salesperson: ${entry.salesperson}</span>
+                                <span>Diabetasol V: ${entry.diabetasolV}</span>
+                                <span>Diabetasol A: ${entry.diabetasolA}</span>
+                                <span>Entrasol: ${entry.entrasol}</span>
+                                <span>Sweetener: ${entry.sweetener || 0}</span>
+                                <span>Dsol 180g: ${entry.pack180g || 0}</span>
+                            </div>
+                        </div>
+                        <div class="outlet-performance ${performanceClass}">${performance} (${achievement.toFixed(1)}%)</div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('outletDailyEntries').innerHTML = entriesHTML;
+            
+            // Update salesperson dropdown
+            updateOutletSalespersonDropdown();
+        }
+        
+        function updateOutletSalespersonDropdown() {
+            if (!currentOutlet) return;
+            
+            // Get unique salespersons for this outlet
+            const salespersons = new Set();
+            if (outletData[currentOutlet]) {
+                outletData[currentOutlet].forEach(entry => {
+                    if (entry.salesperson) {
+                        salespersons.add(entry.salesperson);
+                    }
+                });
+            }
+            
+            // Update salesperson dropdown
+            const salespersonSelect = document.getElementById('outletDailySalesperson');
+            salespersonSelect.innerHTML = '<option value="">Select Salesperson</option>' + 
+                Array.from(salespersons).sort().map(salesperson => `<option value="${salesperson}">${salesperson}</option>`).join('');
+        }
+        
+        function addOutletDailyEntry() {
+            if (!currentOutlet) return;
+            
+            const date = document.getElementById('outletDailyDate').value;
+            const salesperson = document.getElementById('outletDailySalesperson').value;
+            const diabetasolV = parseInt(document.getElementById('outletDailyDiabetasolV').value) || 0;
+            const diabetasolA = parseInt(document.getElementById('outletDailyDiabetasolA').value) || 0;
+            const entrasol = parseInt(document.getElementById('outletDailyEntrasol').value) || 0;
+            const sweetener = parseInt(document.getElementById('outletDailySweetener').value) || 0;
+            const pack180g = parseInt(document.getElementById('outletDailyPack180g').value) || 0;
+            
+            if (!date) {
+                alert('Please select a date');
+                return;
+            }
+            
+            if (!salesperson) {
+                alert('Please select a salesperson');
+                return;
+            }
+            
+            if (diabetasolV === 0 && diabetasolA === 0 && entrasol === 0 && sweetener === 0 && pack180g === 0) {
+                alert('Please enter at least one product quantity');
+                return;
+            }
+            
+            // Initialize outlet data if not exists
+            if (!outletData[currentOutlet]) {
+                outletData[currentOutlet] = [];
+            }
+            
+            // Initialize daily data for this salesperson if not exists
+            if (!dailyData[salesperson]) {
+                dailyData[salesperson] = [];
+            }
+            
+            // Check if an entry for this date and salesperson already exists
+            const existingEntryIndex = outletData[currentOutlet].findIndex(entry => 
+                entry.date === date && entry.salesperson === salesperson
+            );
+            
+            const entry = {
+                date,
+                outlet: currentOutlet,
+                salesperson,
+                diabetasolV,
+                diabetasolA,
+                entrasol,
+                sweetener,
+                pack180g
+            };
+            
+            if (existingEntryIndex >= 0) {
+                // Update existing entry
+                outletData[currentOutlet][existingEntryIndex] = entry;
+            } else {
+                // Add new entry
+                outletData[currentOutlet].push(entry);
+            }
+            
+            // Also add to daily data
+            const existingDailyEntryIndex = dailyData[salesperson].findIndex(entry => 
+                entry.date === date && entry.outlet === currentOutlet
+            );
+            
+            if (existingDailyEntryIndex >= 0) {
+                // Update existing entry
+                dailyData[salesperson][existingDailyEntryIndex] = entry;
+            } else {
+                // Add new entry
+                dailyData[salesperson].push(entry);
+            }
+            
+            saveData();
+            
+            // Clear form
+            document.getElementById('outletDailyDate').value = '';
+            document.getElementById('outletDailySalesperson').value = '';
+            document.getElementById('outletDailyDiabetasolV').value = '';
+            document.getElementById('outletDailyDiabetasolA').value = '';
+            document.getElementById('outletDailyEntrasol').value = '';
+            document.getElementById('outletDailySweetener').value = '';
+            document.getElementById('outletDailyPack180g').value = '';
+            
+            // Update outlet daily entries display
+            updateOutletDailyEntries();
+            
+            // Show success message
+            showSuccessMessage('Daily entry added successfully!');
+        }
+        
+        function updateOutletSalespersons() {
+            if (!currentOutlet) return;
+            
+            // Get outlet data
+            const entries = outletData[currentOutlet] || [];
+            
+            if (entries.length === 0) {
+                document.getElementById('outletSalespersonsList').innerHTML = '<p>No salespersons have worked at this outlet.</p>';
+                return;
+            }
+            
+            // Group by salesperson
+            const salespersonData = {};
+            
+            entries.forEach(entry => {
+                if (!salespersonData[entry.salesperson]) {
+                    salespersonData[entry.salesperson] = {
+                        days: 0,
+                        totalUnits: 0,
+                        mainProducts: 0,
+                        diabetasolV: 0,
+                        diabetasolA: 0,
+                        entrasol: 0,
+                        sweetener: 0,
+                        pack180g: 0
+                    };
+                }
+                
+                salespersonData[entry.salesperson].days += 1;
+                salespersonData[entry.salesperson].totalUnits += entry.diabetasolV + entry.diabetasolA + entry.entrasol + (entry.sweetener || 0) + (entry.pack180g || 0);
+                salespersonData[entry.salesperson].mainProducts += entry.diabetasolV + entry.diabetasolA + entry.entrasol;
+                salespersonData[entry.salesperson].diabetasolV += entry.diabetasolV;
+                salespersonData[entry.salesperson].diabetasolA += entry.diabetasolA;
+                salespersonData[entry.salesperson].entrasol += entry.entrasol;
+                salespersonData[entry.salesperson].sweetener += entry.sweetener || 0;
+                salespersonData[entry.salesperson].pack180g += entry.pack180g || 0;
+            });
+            
+            // Generate HTML for salespersons
+            let salespersonsHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Salesperson</th>
+                                <th>Days Worked</th>
+                                <th>Diabetasol V</th>
+                                <th>Diabetasol A</th>
+                                <th>Entrasol</th>
+                                <th>Sweetener</th>
+                                <th>Dsol 180g</th>
+                                <th>Total Units</th>
+                                <th>Main Products</th>
+                                <th>Avg. Daily</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            Object.keys(salespersonData).forEach(salesperson => {
+                const data = salespersonData[salesperson];
+                const avgDaily = data.mainProducts / data.days;
+                
+                salespersonsHTML += `
+                    <tr>
+                        <td><span class="salesperson-link" onclick="openSalespersonModal('${salesperson}')">${salesperson}</span></td>
+                        <td>${data.days}</td>
+                        <td>${data.diabetasolV}</td>
+                        <td>${data.diabetasolA}</td>
+                        <td>${data.entrasol}</td>
+                        <td>${data.sweetener}</td>
+                        <td>${data.pack180g}</td>
+                        <td><strong>${data.totalUnits}</strong></td>
+                        <td><strong>${data.mainProducts}</strong></td>
+                        <td><strong>${avgDaily.toFixed(1)}</strong></td>
+                        <td><button class="delete-btn" onclick="deleteOutletSalespersonData('${salesperson}')">Delete</button></td>
+                    </tr>
+                `;
+            });
+            
+            salespersonsHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('outletSalespersonsList').innerHTML = salespersonsHTML;
+        }
+        
+        function deleteOutletData(outlet) {
+            if (confirm(`Are you sure you want to delete all data for outlet "${outlet}"?`)) {
+                // Remove outlet data
+                delete outletData[outlet];
+                
+                // Remove outlet from daily data
+                Object.keys(dailyData).forEach(salesperson => {
+                    dailyData[salesperson] = dailyData[salesperson].filter(entry => entry.outlet !== outlet);
+                });
+                
+                saveData();
+                updateOutletDetails();
+                updateFilters();
+            }
+        }
+        
+        function deleteOutletSalespersonData(salesperson) {
+            if (confirm(`Are you sure you want to delete all data for salesperson "${salesperson}" at outlet "${currentOutlet}"?`)) {
+                // Remove salesperson data from outlet
+                if (outletData[currentOutlet]) {
+                    outletData[currentOutlet] = outletData[currentOutlet].filter(entry => entry.salesperson !== salesperson);
+                }
+                
+                // Remove outlet from salesperson's daily data
+                if (dailyData[salesperson]) {
+                    dailyData[salesperson] = dailyData[salesperson].filter(entry => entry.outlet !== currentOutlet);
+                }
+                
+                saveData();
+                updateOutletSalespersons();
+                updateFilters();
+            }
+        }
+        
+        // Helper function to show success messages
+        function showSuccessMessage(message) {
+            const successMessage = document.getElementById('successMessage');
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Check for shared data in URL
+        function checkForSharedData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedData = urlParams.get('data');
+            
+            if (sharedData) {
+                try {
+                    const decodedData = JSON.parse(atob(sharedData));
+                    
+                    if (decodedData.performanceData) {
+                        performanceData = decodedData.performanceData;
+                    }
+                    
+                    if (decodedData.dailyData) {
+                        dailyData = decodedData.dailyData;
+                    }
+                    
+                    if (decodedData.outletData) {
+                        outletData = decodedData.outletData;
+                    }
+                    
+                    if (decodedData.outletsList) {
+                        outletsList = decodedData.outletsList;
+                    }
+                    
+                    saveData();
+                    updateTable();
+                    updateFilters();
+                    updateSummary();
+                    updateProductRankings();
+                    
+                    // Show success message
+                    showSuccessMessage('Data loaded successfully!');
+                    
+                    // Clean up URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } catch (e) {
+                    console.error('Failed to parse shared data:', e);
+                }
+            }
+        }
+        
+        // Initialize the app
+        window.onload = function() {
+            loadData();
+            checkForSharedData();
+        };
+        
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+                if (event.target.id === 'salespersonModal') {
+                    currentSalesperson = null;
+                } else if (event.target.id === 'outletModal') {
+                    currentOutlet = null;
+                } else if (event.target.id === 'outletManagementModal') {
+                    // Clear form when closing
+                    clearOutletForm();
+                } else if (event.target.id === 'editDailyEntryModal') {
+                    closeEditModal();
+                }
+            }
+        };
+    </script>
+</body>
+</html>
